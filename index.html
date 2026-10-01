@@ -1,0 +1,142 @@
+<style>
+  .tex-widget {
+    font-family: Arial, sans-serif;
+    max-width: 850px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 2px solid #333;
+    border-radius: 8px;
+    background-color: #f4f6f8;
+    text-align: center;
+  }
+
+  .stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: #111;
+    border: 2px solid #444;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+
+  .tex-btn {
+    padding: 10px 6px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    background-color: #fff;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+
+  .tex-btn:hover { background-color: #e3f2fd; }
+  .tex-btn.active { background-color: #1976d2; color: white; border-color: #1565c0; }
+
+  .description-box {
+    background: #fff;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    font-size: 1rem;
+    color: #333;
+    text-align: left;
+    min-height: 80px;
+    line-height: 1.4;
+  }
+</style>
+
+<div class="tex-widget">
+  <h2>Texturing & Shading Studio</h2>
+  <p>Explore how raw 3D geometry transforms into a finished surface through base color, surface texturing, and lighting shaders.</p>
+
+  <div class="stage" id="texStage">
+    <!-- Rendered dynamically via JS -->
+  </div>
+
+  <div class="nav-grid">
+    <button class="tex-btn active" onclick="setTexMode('base')">1. Raw Geometry & Base Color</button>
+    <button class="tex-btn" onclick="setTexMode('texture')">2. Adding Surface Textures</button>
+    <button class="tex-btn" onclick="setTexMode('shading')">3. Applying Shading (Light & Shadow)</button>
+  </div>
+
+  <div class="description-box" id="texDesc">
+    <strong>Raw Geometry & Base Color:</strong> The initial 3D polygonal mesh assigned a flat, uniform base color, lacking any surface detail or interaction with virtual lights.
+  </div>
+</div>
+
+<script>
+  const stage = document.getElementById('texStage');
+  const desc = document.getElementById('texDesc');
+  const buttons = document.querySelectorAll('.tex-widget .tex-btn');
+
+  const texModes = {
+    base: {
+      svg: `<svg width="450" height="250" viewBox="0 0 450 250">
+              <!-- Drop Shadow -->
+              <ellipse cx="225" cy="205" rx="50" ry="12" fill="#000" opacity="0.3"/>
+              <!-- Flat colored sphere with wireframe overlay hint -->
+              <circle cx="225" cy="115" r="70" fill="#78909c" stroke="#546e7a" stroke-width="1.5"/>
+              <text x="225" y="235" fill="#b0bec5" font-size="12" text-anchor="middle">Uniform flat color over raw 3D polygonal mesh</text>
+            </svg>`,
+      text: "<strong>Raw Geometry & Base Color:</strong> Before details are added, the model is a naked mesh with a flat, uniform coat of base color. It has no surface patterns, scuffs, or interaction with light yet."
+    },
+    texture: {
+      svg: `<svg width="450" height="250" viewBox="0 0 450 250">
+              <!-- Drop Shadow -->
+              <ellipse cx="225" cy="205" rx="50" ry="12" fill="#000" opacity="0.3"/>
+              <!-- Sphere with surface patterns/details -->
+              <circle cx="225" cy="115" r="70" fill="#8d6e63" stroke="#4e342e" stroke-width="1.5"/>
+              <!-- Wood grain lines / surface details mapped on -->
+              <path d="M 180 80 Q 225 100 270 80" fill="none" stroke="#5d4037" stroke-width="3" opacity="0.7"/>
+              <path d="M 160 115 Q 225 135 290 115" fill="none" stroke="#5d4037" stroke-width="3" opacity="0.7"/>
+              <path d="M 180 150 Q 225 170 270 150" fill="none" stroke="#5d4037" stroke-width="3" opacity="0.7"/>
+              <circle cx="240" cy="100" r="6" fill="#3e2723" opacity="0.6"/>
+              <circle cx="200" cy="130" r="4" fill="#3e2723" opacity="0.6"/>
+              <text x="225" y="235" fill="#d7ccc8" font-size="12" text-anchor="middle">2D surface maps (wood grain, freckles, scuffs) wrapped around the mesh</text>
+            </svg>`,
+      text: "<strong>What is Texturing? (Surface Detail):</strong> Wrapping 2D image maps around the 3D mesh. This adds surface features like wood grain, scuff marks, freckles, or clothing fabrics without altering the underlying geometry."
+    },
+    shading: {
+      svg: `<svg width="450" height="250" viewBox="0 0 450 250">
+              <defs>
+                <radialGradient id="shadedSphere" cx="35%" cy="35%" r="65%">
+                  <stop offset="0%" stop-color="#bcaaa4"/>
+                  <stop offset="40%" stop-color="#8d6e63"/>
+                  <stop offset="100%" stop-color="#3e2723"/>
+                </radialGradient>
+              </defs>
+              <!-- Drop Shadow -->
+              <ellipse cx="225" cy="205" rx="50" ry="12" fill="#000" opacity="0.5"/>
+              <!-- Fully Shaded & Textured Sphere -->
+              <circle cx="225" cy="115" r="70" fill="url(#shadedSphere)" stroke="#3e2723" stroke-width="1.5"/>
+              <!-- Surface texture details integrated with light/shadow -->
+              <path d="M 180 80 Q 225 100 270 80" fill="none" stroke="#271c18" stroke-width="2.5" opacity="0.6"/>
+              <path d="M 160 115 Q 225 135 290 115" fill="none" stroke="#271c18" stroke-width="2.5" opacity="0.6"/>
+              <!-- Highlight -->
+              <ellipse cx="200" cy="90" rx="14" ry="7" fill="#fff" opacity="0.5" transform="rotate(-25 200 90)"/>
+              <text x="225" y="235" fill="#d7ccc8" font-size="12" text-anchor="middle">Shaders calculate light, highlights, and shadows interacting with surface details</text>
+            </svg>`,
+      text: "<strong>What is Shading? (Response to Light):</strong> The mathematical rules that calculate how virtual light sources interact with the textured surface. Shading determines highlights, deep shadows, and tactile finishes."
+    }
+  };
+
+  function setTexMode(mode) {
+    buttons.forEach(b => b.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    stage.innerHTML = texModes[mode].svg;
+    desc.innerHTML = texModes[mode].text;
+  }
+</script>
